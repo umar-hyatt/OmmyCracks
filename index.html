@@ -151,6 +151,7 @@
       word-break: break-all;
       color: var(--success);
       min-height: 48px;
+      white-space: pre-wrap;
     }
 
     .btn-copy {
@@ -222,12 +223,12 @@
   <div class="card">
     <label>Select Version</label>
     <div class="version-toggle">
-      <button class="version-btn active" data-version="storyblock" onclick="selectVersion('storyblock')">Storyblock</button>
-      <button class="version-btn" data-version="abcaudio" onclick="selectVersion('abcaudio')">ABCAudio</button>
+      <button class="version-btn active" data-version="storyblock" onclick="selectVersion('storyblock');window.open('https://www.storyblocks.com','_blank')">Storyblock</button>
+      <button class="version-btn" data-version="pond5" onclick="selectVersion('pond5');window.open('https://www.pond5.com','_blank')">Pond5</button>
     </div>
 
-    <label>Tampered URL</label>
-    <textarea id="inputUrl" placeholder="Paste your tampered URL here..."></textarea>
+    <label id="inputLabel">Tampered URL or Page Source</label>
+    <textarea id="inputUrl" placeholder="Paste a tampered URL — or the full page source (Ctrl+U / Cmd+U) from a Storyblocks or Pond5 page..."></textarea>
 
     <button class="btn-fix" onclick="fixUrl()">Fix URL</button>
 
@@ -264,18 +265,90 @@
       });
     }
 
+    function extractUrlsFromSource(html) {
+      const results = [];
+
+      const previewMatch = html.match(/"previewUrl"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+      if (previewMatch) {
+        const clean = previewMatch[1].replace(/\\\//g, '/').replace(/\\"/g, '');
+        results.push({ url: clean, label: 'Preview (No Watermark)' });
+      }
+
+      const ogAudioMatch = html.match(/og:audio:url["']\s+content=["'](https?:\/\/[^"']+)["']/);
+      if (ogAudioMatch && !results.some(r => r.url === ogAudioMatch[1])) {
+        const isWatermarked = /_WM\./i.test(ogAudioMatch[1]) && !/_NWM\./i.test(ogAudioMatch[1]);
+        if (!isWatermarked) {
+          results.push({ url: ogAudioMatch[1], label: 'OG Audio' });
+        }
+      }
+
+      const cloudFrontPattern = /https?:(?:\\\/\\\/|\/\/)d[a-z0-9]+\.cloudfront\.net(?:\\\/|\/)[^"'\s<>]+?\.(mp3|wav|ogg|m4a|aac|flac)/gi;
+      const cfMatches = html.match(cloudFrontPattern) || [];
+      for (const m of cfMatches) {
+        const clean = m.replace(/\\\//g, '/');
+        if (/_NWM\./i.test(clean) && !results.some(r => r.url === clean)) {
+          results.push({ url: clean, label: 'CloudFront Preview' });
+        }
+      }
+
+      return results;
+    }
+
+    function extractPond5Urls(html) {
+      const found = new Set();
+
+      const ogAudio = html.match(/og:audio(?::secure_url)?["']\s+content=["'](https?:\/\/[^"']+)["']/g) || [];
+      for (const m of ogAudio) {
+        const urlMatch = m.match(/content=["'](https?:\/\/[^"']+)["']/);
+        if (urlMatch) found.add(urlMatch[1]);
+      }
+
+      const p5Url = html.match(/data-p5-url=["'](https?:\/\/[^"']+)["']/);
+      if (p5Url) found.add(p5Url[1]);
+
+      const soundsPattern = /https?:\/\/sounds\.pond5\.com\/[^"'\s<>]+?\.(m4a|mp3|wav|ogg)/gi;
+      const soundsMatches = html.match(soundsPattern) || [];
+      soundsMatches.forEach(u => found.add(u));
+
+      const previewJson = html.match(/"preview_url"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+      if (previewJson) {
+        const clean = previewJson[1].replace(/\\\//g, '/').replace(/\\&/g, '&').replace(/\\=/g, '=');
+        found.add(clean);
+      }
+
+      const nwPrev = [...found].filter(u => /_nw_prev\./i.test(u));
+      return nwPrev.length > 0 ? nwPrev : [...found];
+    }
+
+    function isPageSource(input) {
+      const trimmed = input.trim();
+      return trimmed.startsWith('<') || trimmed.includes('<!DOCTYPE') || trimmed.includes('<html') || trimmed.includes('<script');
+    }
+
     const fixers = {
       storyblock(raw) {
-        // Storyblock tampered URLs have escaped forward slashes: \/ -> /
+        if (isPageSource(raw)) {
+          const results = extractUrlsFromSource(raw);
+          if (results.length === 0) return '⚠ No audio/media URL found in the page source.';
+          return results.map(r => r.url).join('\n');
+        }
         return raw
           .replace(/\\\//g, '/')
           .replace(/\\&/g, '&')
           .replace(/\\=/g, '=')
           .trim();
       },
-      abcaudio(raw) {
-        // Placeholder — will be implemented later
-        return raw.trim();
+      pond5(raw) {
+        if (isPageSource(raw)) {
+          const results = extractPond5Urls(raw);
+          if (results.length === 0) return '⚠ No audio/media URL found in the Pond5 page source.';
+          return results.join('\n');
+        }
+        return raw
+          .replace(/\\\//g, '/')
+          .replace(/\\&/g, '&')
+          .replace(/\\=/g, '=')
+          .trim();
       }
     };
 
@@ -290,8 +363,11 @@
       const audioPreview = document.getElementById('audioPreview');
       const audioPlayer = document.getElementById('audioPlayer');
 
-      if (/\.(mp3|wav|ogg|m4a|aac|flac)(\?|$)/i.test(fixed)) {
-        audioPlayer.src = fixed;
+      const lines = fixed.split('\n').map(l => l.trim()).filter(Boolean);
+      const audioUrl = lines.find(l => /\.(mp3|wav|ogg|m4a|aac|flac)(\?|$)/i.test(l));
+
+      if (audioUrl) {
+        audioPlayer.src = audioUrl;
         audioPreview.classList.add('visible');
       } else {
         audioPreview.classList.remove('visible');
@@ -299,8 +375,8 @@
       }
     }
 
-    function copyUrl() {
-      const text = document.getElementById('outputUrl').textContent;
+    function copyUrl(specificUrl) {
+      const text = specificUrl || document.getElementById('outputUrl').textContent;
       navigator.clipboard.writeText(text).then(() => {
         const toast = document.getElementById('toast');
         toast.classList.add('show');
