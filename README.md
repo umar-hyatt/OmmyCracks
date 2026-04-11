@@ -4,6 +4,8 @@
 
 **Extract clean, non-watermarked audio preview URLs from stock media sites.**
 
+### [`Try Ommy Crack`](https://umar-hyatt.github.io/OmmyCracks/)
+
 [![Live Demo](https://img.shields.io/badge/Live_Demo-7c6aef?style=for-the-badge&logo=github&logoColor=white)](https://umar-hyatt.github.io/OmmyCracks/)
 [![GitHub Pages](https://img.shields.io/badge/Hosted_on-GitHub_Pages-222?style=for-the-badge&logo=githubpages&logoColor=white)](https://umar-hyatt.github.io/OmmyCracks/)
 
