@@ -30,11 +30,23 @@
       padding: 48px 20px;
     }
 
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .title-logo {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+    }
+
     h1 {
       font-size: 2rem;
       font-weight: 700;
       letter-spacing: -0.5px;
-      margin-bottom: 6px;
     }
 
     .subtitle {
@@ -215,15 +227,6 @@
       margin: 24px 0;
     }
 
-    .logo {
-      width: 90px;
-      height: 90px;
-      margin-bottom: 16px;
-      border-radius: 20px;
-      object-fit: contain;
-      filter: drop-shadow(0 0 24px rgba(124, 106, 239, 0.3));
-    }
-
     .dev-footer {
       margin-top: 48px;
       padding: 20px 0;
@@ -263,8 +266,10 @@
   </style>
 </head>
 <body>
-  <a href="https://www.ommygames.com" target="_blank"><img src="logo.png" alt="Ommy Games" class="logo"></a>
-  <h1>Ommy Crack</h1>
+  <div class="title-row">
+    <img src="logo.png" alt="Ommy Games" class="title-logo">
+    <h1>Ommy Crack</h1>
+  </div>
   <p class="subtitle">Paste a tampered URL and get the clean version</p>
 
   <div class="card">
