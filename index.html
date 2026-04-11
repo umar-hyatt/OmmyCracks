@@ -221,6 +221,410 @@
       outline: none;
     }
 
+    .url-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .url-list::-webkit-scrollbar { width: 6px; }
+    .url-list::-webkit-scrollbar-track { background: transparent; }
+    .url-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .url-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      transition: border-color 0.2s;
+    }
+
+    .url-item:hover { border-color: var(--accent); }
+
+    .url-item.is-playing { border-color: var(--success); }
+
+    .url-item-text {
+      flex: 1;
+      min-width: 0;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.75rem;
+      color: var(--success);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .url-item-name {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      color: var(--text);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .url-item-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .url-item-num {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      min-width: 22px;
+      text-align: center;
+    }
+
+    .url-item-btn {
+      flex-shrink: 0;
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text-dim);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .url-item-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .url-item-btn.is-playing { border-color: var(--success); color: var(--success); }
+
+    .url-item-btn svg { width: 14px; height: 14px; }
+
+    .url-count {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+
+    .url-item-btn.dl-btn:hover { color: var(--success); border-color: var(--success); }
+    .url-item-btn.trim-btn:hover { color: #f59e0b; border-color: #f59e0b; }
+
+    .trim-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .trim-overlay.visible { opacity: 1; pointer-events: auto; }
+
+    .trim-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      width: 100%;
+      max-width: 520px;
+      position: relative;
+    }
+
+    .trim-panel h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .trim-panel .trim-filename {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-bottom: 20px;
+      word-break: break-all;
+    }
+
+    .trim-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1.4rem;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .trim-close:hover { color: var(--text); }
+
+    .trim-status {
+      text-align: center;
+      padding: 20px 0;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    .trim-body { display: none; }
+    .trim-body.visible { display: block; }
+
+    .trim-waveform-wrap {
+      position: relative;
+      height: 120px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .trim-waveform-wrap canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .trim-region {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: rgba(124, 106, 239, 0.15);
+      pointer-events: none;
+    }
+
+    .trim-handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 12px;
+      cursor: ew-resize;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .trim-handle::before {
+      content: '';
+      width: 3px;
+      height: 100%;
+      border-radius: 2px;
+    }
+
+    .trim-handle-start { left: 0; }
+    .trim-handle-start::before { background: var(--accent); }
+
+    .trim-handle-end { right: 0; transform: translateX(100%); }
+    .trim-handle-end::before { background: var(--accent); }
+
+    .trim-handle:hover::before, .trim-handle.dragging::before {
+      width: 5px;
+      background: #fff;
+    }
+
+    .trim-handle-label {
+      position: absolute;
+      top: -20px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--accent);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .trim-handle-start .trim-handle-label { left: 0; }
+    .trim-handle-end .trim-handle-label { right: 0; }
+
+    .trim-playhead {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--success);
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .trim-time-bar {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      margin-bottom: 14px;
+      padding: 0 2px;
+    }
+
+    .trim-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .trim-time-input {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .trim-time-input label {
+      font-size: 0.7rem;
+      margin-bottom: 0;
+    }
+
+    .trim-time-input input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'SF Mono', monospace;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .trim-time-input input:focus { outline: none; border-color: var(--accent); }
+
+    .trim-duration {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      padding-top: 16px;
+    }
+
+    .trim-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .trim-actions button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .trim-actions button:hover { opacity: 0.85; }
+
+    .trim-actions .trim-preview-btn {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    .trim-actions .trim-dl-btn {
+      background: var(--success);
+      color: #0e0e12;
+    }
+
+    .trim-actions .trim-dl-full-btn {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .trim-fallback {
+      text-align: center;
+      padding: 10px 0 4px;
+    }
+
+    .trim-drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 28px 16px;
+      margin-bottom: 14px;
+      transition: border-color 0.2s, background 0.2s;
+      cursor: pointer;
+    }
+
+    .trim-drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(124, 106, 239, 0.08);
+    }
+
+    .trim-drop-zone p {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+
+    .trim-drop-zone .drop-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .trim-drop-zone .drop-hint {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      opacity: 0.6;
+    }
+
+    .trim-fallback-btns {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .trim-fallback-btns button,
+    .trim-pick-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .trim-pick-btn {
+      background: var(--success);
+      color: #0e0e12;
+      display: inline-block;
+    }
+
+    .trim-pick-btn:hover,
+    .trim-fallback-btns button:hover { opacity: 0.85; }
+
+    .trim-fallback audio {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 14px;
+    }
+
+    .trim-step {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      margin-right: 6px;
+    }
+
     .divider {
       height: 1px;
       background: var(--border);
@@ -286,21 +690,30 @@
 
     <div class="output-section" id="outputSection">
       <div class="divider"></div>
-      <label>Fixed URL</label>
-      <div class="output-box">
-        <span id="outputUrl"></span>
-        <button class="btn-copy" onclick="copyUrl()" title="Copy to clipboard">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-          </svg>
-        </button>
+
+      <div id="singleOutput">
+        <label>Fixed URL</label>
+        <div class="output-box">
+          <span id="outputUrl"></span>
+          <button class="btn-copy" onclick="copyUrl()" title="Copy to clipboard">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </div>
+        <div class="audio-preview" id="audioPreview">
+          <div class="divider"></div>
+          <label>Preview</label>
+          <audio id="audioPlayer" controls preload="none"></audio>
+        </div>
       </div>
 
-      <div class="audio-preview" id="audioPreview">
-        <div class="divider"></div>
-        <label>Preview</label>
-        <audio id="audioPlayer" controls preload="none"></audio>
+      <div id="listOutput" style="display:none">
+        <label>Found URLs</label>
+        <div class="url-count" id="urlCount"></div>
+        <ul class="url-list" id="urlList"></ul>
+        <audio id="listAudioPlayer" style="display:none" preload="none"></audio>
       </div>
     </div>
   </div>
@@ -315,6 +728,66 @@
       <a href="https://www.ommygames.com" target="_blank">ommygames.com</a>
     </div>
   </footer>
+
+  <div class="trim-overlay" id="trimOverlay" onclick="if(event.target===this)closeTrimmer()">
+    <div class="trim-panel">
+      <button class="trim-close" onclick="closeTrimmer()">&times;</button>
+      <h2>Trim & Download</h2>
+      <div class="trim-filename" id="trimFilename"></div>
+      <div class="trim-status" id="trimStatus">Loading audio...</div>
+      <div class="trim-fallback" id="trimFallback" style="display:none">
+        <audio id="trimFallbackPlayer" controls preload="none"></audio>
+        <p style="margin-bottom:12px"><span class="trim-step">1</span> Download the audio file first</p>
+        <div class="trim-fallback-btns" style="margin-bottom:16px">
+          <button class="trim-dl-full-btn" onclick="downloadFull()">Download File</button>
+        </div>
+        <p style="margin-bottom:8px"><span class="trim-step">2</span> Then drop or select it here to trim</p>
+        <div class="trim-drop-zone" id="trimDropZone" onclick="document.getElementById('trimFileInput').click()">
+          <div class="drop-icon">📂</div>
+          <p>Drag & drop audio file here</p>
+          <div class="drop-hint">or click to browse</div>
+          <input type="file" id="trimFileInput" accept="audio/*" style="display:none" onchange="handleLocalFile(this)">
+        </div>
+      </div>
+      <div class="trim-body" id="trimBody">
+        <div class="trim-waveform-wrap" id="trimWaveWrap">
+          <canvas id="trimWaveCanvas"></canvas>
+          <div class="trim-region" id="trimRegion"></div>
+          <div class="trim-handle trim-handle-start" id="trimHandleStart">
+            <span class="trim-handle-label" id="trimHandleStartLabel">0.0s</span>
+          </div>
+          <div class="trim-handle trim-handle-end" id="trimHandleEnd">
+            <span class="trim-handle-label" id="trimHandleEndLabel">0.0s</span>
+          </div>
+          <div class="trim-playhead" id="trimPlayhead"></div>
+        </div>
+        <div class="trim-time-bar">
+          <span id="trimTimeStart">0:00</span>
+          <span id="trimTimeMid"></span>
+          <span id="trimTimeEnd">0:00</span>
+        </div>
+        <div class="trim-controls">
+          <div class="trim-time-input">
+            <label>Start (s)</label>
+            <input type="number" id="trimStart" min="0" step="0.1" value="0">
+          </div>
+          <div class="trim-time-input">
+            <label>End (s)</label>
+            <input type="number" id="trimEnd" min="0" step="0.1" value="0">
+          </div>
+          <div class="trim-time-input">
+            <label>Duration</label>
+            <input type="text" id="trimDuration" readonly disabled>
+          </div>
+        </div>
+        <div class="trim-actions">
+          <button class="trim-preview-btn" onclick="previewTrim()">Preview</button>
+          <button class="trim-dl-btn" onclick="downloadTrimmed()">Download Trimmed</button>
+          <button class="trim-dl-full-btn" onclick="downloadFull()">Download Full</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="toast" id="toast">Copied to clipboard</div>
 
@@ -415,26 +888,158 @@
       }
     };
 
+    let currentlyPlayingItem = null;
+    const listPlayer = () => document.getElementById('listAudioPlayer');
+
+    function extractFileName(url) {
+      try {
+        const path = new URL(url).pathname;
+        const file = path.split('/').pop();
+        return file
+          .replace(/_(NWM|nw_prev)\.(mp3|m4a|wav|ogg|aac|flac)$/i, '')
+          .replace(/[-_]/g, ' ')
+          .replace(/\b\w/g, c => c.toUpperCase())
+          .trim() || file;
+      } catch { return url.slice(-40); }
+    }
+
+    function playFromList(url, itemEl) {
+      const player = listPlayer();
+      const allItems = document.querySelectorAll('.url-item');
+      const allBtns = document.querySelectorAll('.url-item-btn.play-btn');
+
+      if (currentlyPlayingItem === url && !player.paused) {
+        player.pause();
+        itemEl.classList.remove('is-playing');
+        itemEl.querySelector('.play-btn').classList.remove('is-playing');
+        itemEl.querySelector('.play-btn').innerHTML = playSvg;
+        currentlyPlayingItem = null;
+        return;
+      }
+
+      allItems.forEach(el => el.classList.remove('is-playing'));
+      allBtns.forEach(el => { el.classList.remove('is-playing'); el.innerHTML = playSvg; });
+
+      player.src = url;
+      player.play();
+      currentlyPlayingItem = url;
+      itemEl.classList.add('is-playing');
+      itemEl.querySelector('.play-btn').classList.add('is-playing');
+      itemEl.querySelector('.play-btn').innerHTML = pauseSvg;
+
+      player.onended = () => {
+        itemEl.classList.remove('is-playing');
+        itemEl.querySelector('.play-btn').classList.remove('is-playing');
+        itemEl.querySelector('.play-btn').innerHTML = playSvg;
+        currentlyPlayingItem = null;
+      };
+    }
+
+    const playSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg>';
+    const pauseSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="4" width="4" height="16"/><rect x="15" y="4" width="4" height="16"/></svg>';
+    const copySvg = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+    const dlSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>';
+    const trimSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>';
+
     function fixUrl() {
       const raw = document.getElementById('inputUrl').value;
       if (!raw.trim()) return;
 
       const fixed = fixers[currentVersion](raw);
-      document.getElementById('outputUrl').textContent = fixed;
+      const lines = fixed.split('\n').map(l => l.trim()).filter(Boolean);
+      const audioLines = lines.filter(l => /\.(mp3|wav|ogg|m4a|aac|flac)(\?|$)/i.test(l));
+
       document.getElementById('outputSection').classList.add('visible');
 
-      const audioPreview = document.getElementById('audioPreview');
-      const audioPlayer = document.getElementById('audioPlayer');
+      const singleOut = document.getElementById('singleOutput');
+      const listOut = document.getElementById('listOutput');
 
-      const lines = fixed.split('\n').map(l => l.trim()).filter(Boolean);
-      const audioUrl = lines.find(l => /\.(mp3|wav|ogg|m4a|aac|flac)(\?|$)/i.test(l));
+      if (listPlayer()) { listPlayer().pause(); listPlayer().src = ''; }
+      currentlyPlayingItem = null;
 
-      if (audioUrl) {
-        audioPlayer.src = audioUrl;
-        audioPreview.classList.add('visible');
+      if (audioLines.length > 1) {
+        singleOut.style.display = 'none';
+        listOut.style.display = 'block';
+        document.getElementById('urlCount').textContent = audioLines.length + ' audio URLs found';
+
+        const ul = document.getElementById('urlList');
+        ul.innerHTML = '';
+        audioLines.forEach((url, i) => {
+          const li = document.createElement('li');
+          li.className = 'url-item';
+
+          const num = document.createElement('span');
+          num.className = 'url-item-num';
+          num.textContent = i + 1;
+
+          const info = document.createElement('div');
+          info.className = 'url-item-info';
+
+          const name = document.createElement('div');
+          name.className = 'url-item-name';
+          name.textContent = extractFileName(url);
+
+          const text = document.createElement('div');
+          text.className = 'url-item-text';
+          text.textContent = url;
+
+          info.appendChild(name);
+          info.appendChild(text);
+
+          const playBtn = document.createElement('button');
+          playBtn.className = 'url-item-btn play-btn';
+          playBtn.title = 'Play';
+          playBtn.innerHTML = playSvg;
+          playBtn.onclick = () => playFromList(url, li);
+
+          const copyBtn = document.createElement('button');
+          copyBtn.className = 'url-item-btn';
+          copyBtn.title = 'Copy URL';
+          copyBtn.innerHTML = copySvg;
+          copyBtn.onclick = () => {
+            navigator.clipboard.writeText(url).then(() => {
+              const toast = document.getElementById('toast');
+              toast.classList.add('show');
+              setTimeout(() => toast.classList.remove('show'), 1500);
+            });
+          };
+
+          const downloadBtn = document.createElement('button');
+          downloadBtn.className = 'url-item-btn dl-btn';
+          downloadBtn.title = 'Download';
+          downloadBtn.innerHTML = dlSvg;
+          downloadBtn.onclick = () => downloadAudioUrl(url);
+
+          const trimBtn = document.createElement('button');
+          trimBtn.className = 'url-item-btn trim-btn';
+          trimBtn.title = 'Trim & Download';
+          trimBtn.innerHTML = trimSvg;
+          trimBtn.onclick = () => openTrimmer(url);
+
+          li.appendChild(num);
+          li.appendChild(info);
+          li.appendChild(playBtn);
+          li.appendChild(copyBtn);
+          li.appendChild(downloadBtn);
+          li.appendChild(trimBtn);
+          ul.appendChild(li);
+        });
       } else {
-        audioPreview.classList.remove('visible');
-        audioPlayer.src = '';
+        singleOut.style.display = 'block';
+        listOut.style.display = 'none';
+        document.getElementById('outputUrl').textContent = fixed;
+
+        const audioPreview = document.getElementById('audioPreview');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const audioUrl = audioLines[0];
+
+        if (audioUrl) {
+          audioPlayer.src = audioUrl;
+          audioPreview.classList.add('visible');
+        } else {
+          audioPreview.classList.remove('visible');
+          audioPlayer.src = '';
+        }
       }
     }
 
@@ -445,6 +1050,401 @@
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 1500);
       });
+    }
+
+    // ---- Download ----
+    function downloadAudioUrl(url) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = extractFileName(url).replace(/\s+/g, '-').toLowerCase() + '.' + (url.match(/\.(mp3|m4a|wav|ogg|aac|flac)/i)?.[1] || 'mp3');
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // ---- Trimmer ----
+    let trimAudioBuffer = null;
+    let trimAudioCtx = null;
+    let trimSourceNode = null;
+    let trimCurrentUrl = '';
+    let trimAnimFrame = null;
+    let trimPreviewStartTime = 0;
+    let trimPreviewStartOffset = 0;
+
+    const corsProxies = [
+      url => 'https://corsproxy.io/?' + encodeURIComponent(url),
+      url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+      url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
+    ];
+
+    async function fetchAudioBuffer(url, statusEl) {
+      const attempts = [
+        { label: 'Loading audio...', fn: () => fetch(url) },
+        ...corsProxies.map((p, i) => ({
+          label: `Trying proxy ${i + 1}/${corsProxies.length}...`,
+          fn: () => fetch(p(url)),
+        }))
+      ];
+
+      for (const attempt of attempts) {
+        if (statusEl) statusEl.textContent = attempt.label;
+        for (let retry = 0; retry < 2; retry++) {
+          try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 12000);
+            const r = await attempt.fn();
+            clearTimeout(timeout);
+
+            if (!r.ok) throw new Error();
+
+            const ct = r.headers.get('content-type') || '';
+            if (ct.includes('text/html')) throw new Error('HTML response');
+
+            const buf = await r.arrayBuffer();
+            if (buf.byteLength < 500) throw new Error('Too small');
+            return buf;
+          } catch(e) {
+            if (retry === 0) await new Promise(r => setTimeout(r, 600));
+          }
+        }
+      }
+      throw new Error('All attempts failed');
+    }
+
+    function openTrimmer(url) {
+      trimCurrentUrl = url;
+      trimAudioBuffer = null;
+      const overlay = document.getElementById('trimOverlay');
+      const status = document.getElementById('trimStatus');
+      const fallback = document.getElementById('trimFallback');
+      const body = document.getElementById('trimBody');
+      const fname = document.getElementById('trimFilename');
+
+      fname.textContent = extractFileName(url);
+      status.textContent = 'Loading audio...';
+      status.style.display = 'block';
+      fallback.style.display = 'none';
+      body.classList.remove('visible');
+      overlay.classList.add('visible');
+
+      document.getElementById('trimPlayhead').style.left = '0%';
+      document.getElementById('trimFileInput').value = '';
+      document.getElementById('trimFallbackPlayer').src = url;
+
+      if (!trimAudioCtx) trimAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      fetchAudioBuffer(url, status)
+        .then(buf => trimAudioCtx.decodeAudioData(buf))
+        .then(decoded => loadDecodedAudio(decoded))
+        .catch(() => {
+          status.style.display = 'none';
+          fallback.style.display = 'block';
+        });
+    }
+
+    // Drag & drop support for trim panel
+    document.addEventListener('DOMContentLoaded', () => {
+      const dz = document.getElementById('trimDropZone');
+      if (!dz) return;
+
+      dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+      dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+      dz.addEventListener('drop', e => {
+        e.preventDefault();
+        dz.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('audio/')) {
+          loadLocalAudioFile(file);
+        }
+      });
+    });
+
+    function loadLocalAudioFile(file) {
+      document.getElementById('trimFallback').style.display = 'none';
+      document.getElementById('trimStatus').textContent = 'Decoding audio...';
+      document.getElementById('trimStatus').style.display = 'block';
+
+      if (!trimAudioCtx) trimAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        trimAudioCtx.decodeAudioData(reader.result)
+          .then(decoded => loadDecodedAudio(decoded))
+          .catch(() => {
+            document.getElementById('trimStatus').textContent = 'Could not decode. Try MP3 or WAV format.';
+          });
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function loadDecodedAudio(decoded) {
+      trimAudioBuffer = decoded;
+      const dur = decoded.duration;
+
+      document.getElementById('trimStart').value = 0;
+      document.getElementById('trimStart').max = dur.toFixed(1);
+      document.getElementById('trimEnd').value = dur.toFixed(1);
+      document.getElementById('trimEnd').max = dur.toFixed(1);
+
+      document.getElementById('trimStatus').style.display = 'none';
+      document.getElementById('trimFallback').style.display = 'none';
+      document.getElementById('trimBody').classList.add('visible');
+
+      drawWaveform(decoded);
+      syncTrimUI();
+    }
+
+    function handleLocalFile(input) {
+      const file = input.files[0];
+      if (file) loadLocalAudioFile(file);
+    }
+
+    // ---- Waveform Drawing ----
+    function drawWaveform(buffer) {
+      const canvas = document.getElementById('trimWaveCanvas');
+      const wrap = document.getElementById('trimWaveWrap');
+      const dpr = window.devicePixelRatio || 1;
+      const w = wrap.clientWidth;
+      const h = wrap.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      const data = buffer.getChannelData(0);
+      const step = Math.ceil(data.length / w);
+
+      ctx.clearRect(0, 0, w, h);
+      const mid = h / 2;
+
+      for (let i = 0; i < w; i++) {
+        let min = 1, max = -1;
+        for (let j = 0; j < step; j++) {
+          const val = data[i * step + j] || 0;
+          if (val < min) min = val;
+          if (val > max) max = val;
+        }
+        const topY = mid + min * mid * 0.9;
+        const botY = mid + max * mid * 0.9;
+        ctx.fillStyle = 'rgba(124, 106, 239, 0.5)';
+        ctx.fillRect(i, topY, 1, botY - topY || 1);
+      }
+
+      const dur = buffer.duration;
+      const fmt = s => {
+        const m = Math.floor(s / 60);
+        const sec = Math.floor(s % 60);
+        return m + ':' + String(sec).padStart(2, '0');
+      };
+      document.getElementById('trimTimeStart').textContent = '0:00';
+      document.getElementById('trimTimeMid').textContent = fmt(dur / 2);
+      document.getElementById('trimTimeEnd').textContent = fmt(dur);
+    }
+
+    // ---- Trim UI Sync ----
+    function syncTrimUI() {
+      if (!trimAudioBuffer) return;
+      const dur = trimAudioBuffer.duration;
+      const s = Math.max(0, Math.min(dur, parseFloat(document.getElementById('trimStart').value) || 0));
+      const e = Math.max(s, Math.min(dur, parseFloat(document.getElementById('trimEnd').value) || dur));
+
+      const region = document.getElementById('trimRegion');
+      const sP = (s / dur) * 100;
+      const eP = (e / dur) * 100;
+      region.style.left = sP + '%';
+      region.style.width = (eP - sP) + '%';
+
+      const hs = document.getElementById('trimHandleStart');
+      const he = document.getElementById('trimHandleEnd');
+      hs.style.left = sP + '%';
+      he.style.left = eP + '%';
+      he.style.transform = 'translateX(-100%)';
+
+      document.getElementById('trimHandleStartLabel').textContent = s.toFixed(1) + 's';
+      document.getElementById('trimHandleEndLabel').textContent = e.toFixed(1) + 's';
+
+      const d = Math.max(0, e - s);
+      document.getElementById('trimDuration').value = d.toFixed(1) + 's';
+    }
+
+    document.getElementById('trimStart').addEventListener('input', syncTrimUI);
+    document.getElementById('trimEnd').addEventListener('input', syncTrimUI);
+
+    // ---- Draggable Handles ----
+    let dragTarget = null;
+
+    function getPosFraction(e, wrap) {
+      const rect = wrap.getBoundingClientRect();
+      return Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    }
+
+    document.getElementById('trimHandleStart').addEventListener('mousedown', e => { e.preventDefault(); dragTarget = 'start'; e.target.closest('.trim-handle').classList.add('dragging'); });
+    document.getElementById('trimHandleEnd').addEventListener('mousedown', e => { e.preventDefault(); dragTarget = 'end'; e.target.closest('.trim-handle').classList.add('dragging'); });
+
+    document.getElementById('trimHandleStart').addEventListener('touchstart', e => { dragTarget = 'start'; e.target.closest('.trim-handle').classList.add('dragging'); }, { passive: true });
+    document.getElementById('trimHandleEnd').addEventListener('touchstart', e => { dragTarget = 'end'; e.target.closest('.trim-handle').classList.add('dragging'); }, { passive: true });
+
+    function onDragMove(clientX) {
+      if (!dragTarget || !trimAudioBuffer) return;
+      const wrap = document.getElementById('trimWaveWrap');
+      const rect = wrap.getBoundingClientRect();
+      const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      const dur = trimAudioBuffer.duration;
+      const time = +(frac * dur).toFixed(1);
+
+      if (dragTarget === 'start') {
+        const end = parseFloat(document.getElementById('trimEnd').value) || dur;
+        document.getElementById('trimStart').value = Math.min(time, end - 0.1);
+      } else {
+        const start = parseFloat(document.getElementById('trimStart').value) || 0;
+        document.getElementById('trimEnd').value = Math.max(time, start + 0.1);
+      }
+      syncTrimUI();
+    }
+
+    document.addEventListener('mousemove', e => onDragMove(e.clientX));
+    document.addEventListener('touchmove', e => { if (dragTarget) onDragMove(e.touches[0].clientX); }, { passive: true });
+
+    document.addEventListener('mouseup', () => {
+      if (dragTarget) { document.querySelectorAll('.trim-handle').forEach(h => h.classList.remove('dragging')); dragTarget = null; }
+    });
+    document.addEventListener('touchend', () => {
+      if (dragTarget) { document.querySelectorAll('.trim-handle').forEach(h => h.classList.remove('dragging')); dragTarget = null; }
+    });
+
+    // Click on waveform to set playhead position
+    document.getElementById('trimWaveWrap').addEventListener('click', e => {
+      if (dragTarget || !trimAudioBuffer) return;
+      const wrap = document.getElementById('trimWaveWrap');
+      const frac = getPosFraction(e, wrap);
+      const dur = trimAudioBuffer.duration;
+      const time = frac * dur;
+      const s = parseFloat(document.getElementById('trimStart').value) || 0;
+      const end = parseFloat(document.getElementById('trimEnd').value) || dur;
+      if (Math.abs(time - s) < Math.abs(time - end)) {
+        document.getElementById('trimStart').value = +time.toFixed(1);
+      } else {
+        document.getElementById('trimEnd').value = +time.toFixed(1);
+      }
+      syncTrimUI();
+    });
+
+    function closeTrimmer() {
+      document.getElementById('trimOverlay').classList.remove('visible');
+      stopTrimPreview();
+      trimAudioBuffer = null;
+    }
+
+    function stopTrimPreview() {
+      if (trimSourceNode) { try { trimSourceNode.stop(); } catch(e){} trimSourceNode = null; }
+      if (trimAnimFrame) { cancelAnimationFrame(trimAnimFrame); trimAnimFrame = null; }
+      document.getElementById('trimPlayhead').style.left = '0%';
+    }
+
+    function previewTrim() {
+      if (!trimAudioBuffer) return;
+      stopTrimPreview();
+
+      const s = parseFloat(document.getElementById('trimStart').value) || 0;
+      const e = parseFloat(document.getElementById('trimEnd').value) || trimAudioBuffer.duration;
+      const duration = Math.max(0, e - s);
+      if (duration <= 0) return;
+
+      trimSourceNode = trimAudioCtx.createBufferSource();
+      trimSourceNode.buffer = trimAudioBuffer;
+      trimSourceNode.connect(trimAudioCtx.destination);
+      trimSourceNode.start(0, s, duration);
+      trimPreviewStartTime = trimAudioCtx.currentTime;
+      trimPreviewStartOffset = s;
+
+      const playhead = document.getElementById('trimPlayhead');
+      const totalDur = trimAudioBuffer.duration;
+
+      function animatePlayhead() {
+        const elapsed = trimAudioCtx.currentTime - trimPreviewStartTime;
+        const pos = trimPreviewStartOffset + elapsed;
+        playhead.style.left = ((pos / totalDur) * 100) + '%';
+        if (elapsed < duration) {
+          trimAnimFrame = requestAnimationFrame(animatePlayhead);
+        } else {
+          playhead.style.left = ((e / totalDur) * 100) + '%';
+        }
+      }
+      trimAnimFrame = requestAnimationFrame(animatePlayhead);
+
+      trimSourceNode.onended = () => { trimSourceNode = null; };
+    }
+
+    function encodeWav(audioBuffer, startSec, endSec) {
+      const sampleRate = audioBuffer.sampleRate;
+      const numChannels = audioBuffer.numberOfChannels;
+      const startSample = Math.floor(startSec * sampleRate);
+      const endSample = Math.floor(endSec * sampleRate);
+      const length = endSample - startSample;
+
+      const buffer = new ArrayBuffer(44 + length * numChannels * 2);
+      const view = new DataView(buffer);
+
+      function writeStr(offset, str) {
+        for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+      }
+
+      const byteRate = sampleRate * numChannels * 2;
+      const blockAlign = numChannels * 2;
+      const dataSize = length * numChannels * 2;
+
+      writeStr(0, 'RIFF');
+      view.setUint32(4, 36 + dataSize, true);
+      writeStr(8, 'WAVE');
+      writeStr(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, numChannels, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, byteRate, true);
+      view.setUint16(32, blockAlign, true);
+      view.setUint16(34, 16, true);
+      writeStr(36, 'data');
+      view.setUint32(40, dataSize, true);
+
+      let offset = 44;
+      const channels = [];
+      for (let ch = 0; ch < numChannels; ch++) {
+        channels.push(audioBuffer.getChannelData(ch));
+      }
+
+      for (let i = 0; i < length; i++) {
+        for (let ch = 0; ch < numChannels; ch++) {
+          let sample = channels[ch][startSample + i];
+          sample = Math.max(-1, Math.min(1, sample));
+          view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+          offset += 2;
+        }
+      }
+
+      return new Blob([buffer], { type: 'audio/wav' });
+    }
+
+    function downloadTrimmed() {
+      if (!trimAudioBuffer) return;
+      const s = parseFloat(document.getElementById('trimStart').value) || 0;
+      const e = parseFloat(document.getElementById('trimEnd').value) || trimAudioBuffer.duration;
+      if (e <= s) return;
+
+      const blob = encodeWav(trimAudioBuffer, s, e);
+      const name = extractFileName(trimCurrentUrl).replace(/\s+/g, '-').toLowerCase() + '-trimmed.wav';
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+    }
+
+    function downloadFull() {
+      if (trimCurrentUrl) downloadAudioUrl(trimCurrentUrl);
     }
 
     // Auto-fix on paste
@@ -458,6 +1458,11 @@
         e.preventDefault();
         fixUrl();
       }
+    });
+
+    // Close trimmer on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeTrimmer();
     });
   </script>
 </body>
