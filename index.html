@@ -70,29 +70,56 @@
       margin-bottom: 24px;
     }
 
+    .version-group {
+      flex: 1;
+      display: flex;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .version-group:hover { border-color: var(--accent); }
+
+    .version-group.active {
+      border-color: var(--accent);
+      background: rgba(124, 106, 239, 0.12);
+    }
+
     .version-btn {
       flex: 1;
       padding: 12px 16px;
-      border: 2px solid var(--border);
-      border-radius: 8px;
+      border: none;
       background: transparent;
       color: var(--text-dim);
       font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .version-group:hover .version-btn { color: var(--text); }
+    .version-group.active .version-btn { color: var(--accent); }
+
+    .version-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      border-left: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      text-decoration: none;
       transition: all 0.2s;
+      flex-shrink: 0;
     }
 
-    .version-btn:hover {
-      border-color: var(--accent);
-      color: var(--text);
-    }
-
-    .version-btn.active {
-      border-color: var(--accent);
-      background: rgba(124, 106, 239, 0.12);
+    .version-link:hover {
+      background: rgba(124,106,239,0.12);
       color: var(--accent);
     }
+
+    .version-link svg { width: 14px; height: 14px; }
 
     label {
       display: block;
@@ -324,6 +351,132 @@
 
     .url-item-btn.dl-btn:hover { color: var(--success); border-color: var(--success); }
     .url-item-btn.trim-btn:hover { color: #f59e0b; border-color: #f59e0b; }
+
+    .easy-method {
+      margin-top: 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .easy-method-toggle {
+      width: 100%;
+      background: var(--bg);
+      border: none;
+      color: var(--text);
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+
+    .easy-method-toggle:hover { background: var(--border); }
+
+    .easy-method-toggle .arrow {
+      transition: transform 0.25s;
+      font-size: 0.7rem;
+    }
+
+    .easy-method.open .arrow { transform: rotate(90deg); }
+
+    .easy-method-body {
+      display: none;
+      padding: 14px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    .easy-method.open .easy-method-body { display: block; }
+
+    .method-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .method-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      padding: 8px 0;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .method-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .method-content { display: none; }
+    .method-content.active { display: block; }
+
+    .bookmarklet-link {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.82rem;
+      margin: 8px 0;
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .bookmarklet-link:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+    }
+
+    .method-steps {
+      margin: 8px 0 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: step;
+    }
+
+    .method-steps li {
+      counter-increment: step;
+      padding: 4px 0 4px 28px;
+      position: relative;
+    }
+
+    .method-steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 0.68rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .method-steps code {
+      background: var(--bg);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.76rem;
+      color: var(--text);
+    }
 
     .trim-overlay {
       position: fixed;
@@ -688,12 +841,72 @@
   <div class="card">
     <label>Select Version</label>
     <div class="version-toggle">
-      <button class="version-btn active" data-version="storyblock" onclick="selectVersion('storyblock');window.open('https://www.storyblocks.com','_blank')">Storyblock</button>
-      <button class="version-btn" data-version="pond5" onclick="selectVersion('pond5');window.open('https://www.pond5.com','_blank')">Pond5</button>
+      <div class="version-group active" data-version="storyblock" onclick="selectVersion('storyblock')">
+        <button class="version-btn">Storyblock</button>
+        <a class="version-link" href="https://www.storyblocks.com" target="_blank" title="Open Storyblocks" onclick="event.stopPropagation()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+      <div class="version-group" data-version="pond5" onclick="selectVersion('pond5')">
+        <button class="version-btn">Pond5</button>
+        <a class="version-link" href="https://www.pond5.com" target="_blank" title="Open Pond5" onclick="event.stopPropagation()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="easy-method" id="easyMethod">
+      <button class="easy-method-toggle" onclick="this.parentElement.classList.toggle('open')">
+        <span class="arrow">&#9654;</span> How to get audio URLs easily
+      </button>
+      <div class="easy-method-body">
+        <div class="method-tabs">
+          <button class="method-tab active" onclick="switchMethod('bookmarklet',this)">Bookmarklet</button>
+          <button class="method-tab" onclick="switchMethod('console',this)">Console Paste</button>
+          <button class="method-tab" onclick="switchMethod('source',this)">View Source</button>
+        </div>
+
+        <div class="method-content active" id="method-bookmarklet">
+          <p>Drag this button to your bookmarks bar:</p>
+          <a class="bookmarklet-link" href="javascript:void(function(){var h=document.documentElement.outerHTML,f=new Set,u;var r1=h.match(/previewUrl[&quot;']\s*:\s*[&quot;'](https?:\\?\/\\?\/[^&quot;']+)[&quot;']/g)||[];r1.forEach(function(m){var u=m.match(/(https?:\\?\/\\?\/[^&quot;']+)/);if(u)f.add(u[1].replace(/\\\\?\//g,'/').replace(/\\&amp;/g,'&amp;'))});var r2=h.match(/https?:\/\/[^\s&quot;'&lt;&gt;]*?(?:_NWM|_nw_prev)\.[a-zA-Z0-9]+/gi)||[];r2.forEach(function(u){f.add(u)});var r3=h.match(/https?:\/\/d[a-z0-9]+\.cloudfront\.net\/[^\s&quot;'&lt;&gt;]+\.(?:mp3|wav|m4a|ogg)/gi)||[];r3.forEach(function(u){f.add(u)});var r4=h.match(/https?:\/\/sounds\.pond5\.com\/[^\s&quot;'&lt;&gt;]+\.(?:mp3|wav|m4a|ogg)/gi)||[];r4.forEach(function(u){f.add(u)});var a=[...f];if(a.length===0){alert('No audio URLs found on this page.');}else{var t=a.join('\n');navigator.clipboard.writeText(t).then(function(){alert('Copied '+a.length+' URL(s) to clipboard!\\nNow paste into Ommy Crack.');}).catch(function(){prompt('Copy these URLs:',t);})}}())" onclick="event.preventDefault();alert('Drag this to your bookmarks bar — don\'t click it here!')">
+            🔊 Ommy Extract
+          </a>
+          <ol class="method-steps">
+            <li>Drag <strong>Ommy Extract</strong> to your bookmarks bar</li>
+            <li>Go to any Storyblocks or Pond5 audio page</li>
+            <li>Click the bookmarklet — URLs are copied to clipboard</li>
+            <li>Come back here and paste (<code>Ctrl+V</code>)</li>
+          </ol>
+        </div>
+
+        <div class="method-content" id="method-console">
+          <p>Quick copy via browser console:</p>
+          <ol class="method-steps">
+            <li>On the audio page, press <code>F12</code> to open DevTools</li>
+            <li>Go to the <strong>Console</strong> tab</li>
+            <li>Paste this and press Enter:</li>
+          </ol>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin:8px 0;font-family:monospace;font-size:0.72rem;word-break:break-all;cursor:pointer;position:relative" onclick="navigator.clipboard.writeText(this.dataset.cmd);this.querySelector('.cp').textContent='Copied!';setTimeout(()=>this.querySelector('.cp').textContent='Click to copy',1200)" data-cmd="copy(document.documentElement.outerHTML)">
+            <span class="cp" style="position:absolute;top:4px;right:8px;font-size:0.65rem;color:var(--accent);font-family:Inter,sans-serif">Click to copy</span>
+            copy(document.documentElement.outerHTML)
+          </div>
+          <ol class="method-steps" start="4">
+            <li>Come back here and paste the result</li>
+          </ol>
+        </div>
+
+        <div class="method-content" id="method-source">
+          <ol class="method-steps">
+            <li>On the audio page, press <code>Ctrl+U</code> (or <code>Cmd+U</code> on Mac)</li>
+            <li>Press <code>Ctrl+A</code> to select all, then <code>Ctrl+C</code> to copy</li>
+            <li>Come back here and paste it</li>
+          </ol>
+        </div>
+      </div>
     </div>
 
     <label id="inputLabel">Tampered URL or Page Source</label>
-    <textarea id="inputUrl" placeholder="Paste a tampered URL — or the full page source (Ctrl+U / Cmd+U) from a Storyblocks or Pond5 page..."></textarea>
+    <textarea id="inputUrl" placeholder="Paste audio URLs or full page source from Storyblocks / Pond5..."></textarea>
 
     <button class="btn-fix" onclick="fixUrl()">Fix URL</button>
 
@@ -804,9 +1017,16 @@
 
     function selectVersion(version) {
       currentVersion = version;
-      document.querySelectorAll('.version-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.version === version);
+      document.querySelectorAll('.version-group').forEach(g => {
+        g.classList.toggle('active', g.dataset.version === version);
       });
+    }
+
+    function switchMethod(id, btn) {
+      document.querySelectorAll('.method-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.method-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('method-' + id).classList.add('active');
     }
 
     function extractUrlsFromSource(html) {
