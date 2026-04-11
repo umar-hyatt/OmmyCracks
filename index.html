@@ -214,6 +214,43 @@
       background: var(--border);
       margin: 24px 0;
     }
+
+    .dev-footer {
+      margin-top: 48px;
+      padding: 20px 0;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .dev-footer a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .dev-footer a:hover {
+      color: var(--accent-hover);
+      text-decoration: underline;
+    }
+
+    .dev-footer .dev-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .dev-footer .dev-links {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .dev-footer .dev-separator {
+      color: var(--border);
+    }
   </style>
 </head>
 <body>
@@ -252,6 +289,17 @@
       </div>
     </div>
   </div>
+
+  <footer class="dev-footer">
+    <div class="dev-name">Developed by Umar Hyatt</div>
+    <div class="dev-links">
+      <a href="mailto:umarhyatt14@gmail.com">umarhyatt14@gmail.com</a>
+      <span class="dev-separator">|</span>
+      <a href="tel:+923164072170">03164072170</a>
+      <span class="dev-separator">|</span>
+      <a href="https://www.ommygames.com" target="_blank">ommygames.com</a>
+    </div>
+  </footer>
 
   <div class="toast" id="toast">Copied to clipboard</div>
 
